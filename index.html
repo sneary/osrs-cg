@@ -407,7 +407,7 @@
       this.canvas.addEventListener('click', (e) => {
         const tile = new Coords(Math.floor(e.offsetX / this.tileSize),
                                 Math.floor(e.offsetY / this.tileSize));
-        this.game.click(tile)
+        this.game.click(tile, {x: e.offsetX, y: e.offsetY})
       })
     }
 
@@ -537,19 +537,16 @@
         if (progress > 1) continue
         
         const size = this.tileSize * 0.3 * Math.sin(progress * Math.PI)
-        const alpha = 1 - progress
         
         this.ctx.beginPath()
-        this.ctx.moveTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize - size, anim.pos.y * this.tileSize + 0.5 * this.tileSize - size)
-        this.ctx.lineTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize + size, anim.pos.y * this.tileSize + 0.5 * this.tileSize + size)
-        this.ctx.moveTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize + size, anim.pos.y * this.tileSize + 0.5 * this.tileSize - size)
-        this.ctx.lineTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize - size, anim.pos.y * this.tileSize + 0.5 * this.tileSize + size)
+        this.ctx.moveTo(anim.pos.x - size, anim.pos.y - size)
+        this.ctx.lineTo(anim.pos.x + size, anim.pos.y + size)
+        this.ctx.moveTo(anim.pos.x + size, anim.pos.y - size)
+        this.ctx.lineTo(anim.pos.x - size, anim.pos.y + size)
         
         this.ctx.strokeStyle = anim.color
-        this.ctx.globalAlpha = alpha
         this.ctx.lineWidth = 2
         this.ctx.stroke()
-        this.ctx.globalAlpha = 1
       }
     }
   }
@@ -677,13 +674,13 @@
       this.foodEaten = 0
     }
 
-    click(tile) {
+    click(tile, exactPos) {
       if (this.boss.area.contains(tile)) {
         this.player.attack();
-        this.clickAnimations.push(new ClickAnimation(tile, colors.health)) // Red for attacking
+        this.clickAnimations.push(new ClickAnimation(exactPos, "#FF0000")) // Pure Red for attacking
       } else {
         this.player.setTarget(tile);
-        this.clickAnimations.push(new ClickAnimation(tile, colors.player)) // Yellow for moving
+        this.clickAnimations.push(new ClickAnimation(exactPos, "#FFFF00")) // Pure Yellow for moving
       }
     }
 
