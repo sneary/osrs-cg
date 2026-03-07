@@ -1,74 +1,89 @@
-<div style="display: flex;">
-  <div>
-    <canvas id = "board" width="500" height="500"></canvas>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>OSRS CG Helper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+
+
+<main class="app-container">
+  
+  <div class="left-column">
+    <div class="glass-panel board-container">
+      <canvas id="board" width="500" height="500"></canvas>
+    </div>
+
+    <div class="glass-panel">
+      <h2>Options</h2>
+      <label class="option-item"><input type="checkbox" id="opts_damageSounds"/> Damage sounds</label>
+      <label class="option-item"><input type="checkbox" id="opts_attackSwapSounds"/> Hunllef attack style swap sounds</label>
+      <label class="option-item"><input type="checkbox" id="opts_freezeScoresOnDeath"/> Freeze scores on death</label>
+      <label class="option-item"><input type="checkbox" id="opts_showPathing"/> Show pathing</label>
+      <label class="option-item"><input type="checkbox" id="opts_tornadoTrueTile"/> Show tornado true tiles</label>
+      <label class="option-item"><input type="checkbox" id="opts_hunleffInCorner"/> Spawn Hunllef always in corner.</label>
+      <label class="option-item"><input type="checkbox" id="opts_showAdditionalStats"/> Show additional stats</label>
+    </div>
   </div>
-  <div style="margin: 10px;">
-    <div style = "margin-bottom: 10px; display: flex;">
-      <canvas id="health" width="100" height="100"></canvas>
-      <div style="text-align: center; margin: 10px;">
-        <div >Damage:</div>
-        <div id="alive_damage" style="font-weight: bold; margin-bottom: 10px;"></div>
-        <div style="text-align: center;">Survived ticks:</div>
-        <div id="alive_ticks" style="font-weight: bold; margin-bottom: 5px;"></div>
+
+  <div class="right-column">
+    <!-- Control Bar -->
+    <div class="control-bar glass-panel">
+      <button id="btn-play" class="control-btn active" onclick="togglePause(false)">Play</button>
+      <button id="btn-pause" class="control-btn" onclick="togglePause(true)">Pause</button>
+      <button id="btn-reset" class="control-btn danger" onclick="resetGame()">Reset</button>
+      <button id="btn-mute" class="control-btn" onclick="toggleGlobalMute()">Mute: Off</button>
+    </div>
+
+    <div class="glass-panel stats-row">
+      <div class="health-container">
+        <canvas id="health" width="100" height="100"></canvas>
       </div>
-      <div style="text-align: center; margin: 10px;">
-        <div >Damage efficiency:</div>
-        <div id="alive_damage_eff" style="font-weight: bold; margin-bottom: 10px;">100%</div>
-        <div style="text-align: center;">Survival efficiency:</div>
-        <div id="alive_ticks_eff" style="font-weight: bold; margin-bottom: 5px;">100%</div>
+      <div class="stat-block">
+        <div class="stat-item">Damage: <span class="stat-value" id="alive_damage"></span></div>
+        <div class="stat-item">Ticks survived: <span class="stat-value" id="alive_ticks"></span></div>
+        <div class="stat-item" style="margin-top: 8px;">Dmg Eff: <span class="stat-value" id="alive_damage_eff">100%</span></div>
+        <div class="stat-item">Surv Eff: <span class="stat-value" id="alive_ticks_eff">100%</span></div>
       </div>
     </div>
-    <canvas id="inventory" width="200" height="350"></canvas>
-    <canvas id="prayer_book" width="200" height="350" style="display: none;"></canvas>
+
+    <div class="glass-panel inventory-container">
+      <canvas id="inventory" width="200" height="350"></canvas>
+      <canvas id="prayer_book" width="200" height="350" style="display: none;"></canvas>
+    </div>
+
+    <div id="additional_stats" class="glass-panel" style="display: none;">
+      <h2>Additional stats</h2>
+      <div class="stat-item">Ticks: <span class="stat-value"><span id="ticks"></span> (<span id="time"></span>s)</span></div>
+      <div class="stat-item">Tornado hits: <span class="stat-value" id="tornado_hits"></span></div>
+      <div class="stat-item">Floor hits: <span class="stat-value" id="floor_hits"></span></div>
+      <div class="stat-item">Boss hits: <span class="stat-value" id="boss_hits"></span></div>
+      <div class="stat-item">Avoidable dmg: <span class="stat-value" id="avoidable_dmg"></span></div>
+      <div class="stat-item">Unavoidable dmg: <span class="stat-value" id="unavoidable_dmg"></span></div>
+      <div class="stat-item">Correct attack time: <span class="stat-value"><span id="correct_attacks"></span>%</span></div>
+      <div class="stat-item">Failed attack time: <span class="stat-value"><span id="failed_attacks"></span>%</span></div>
+      <div class="stat-item">Eating time: <span class="stat-value"><span id="eat_attacks"></span>%</span></div>
+      <div class="stat-item">Stalled time: <span class="stat-value"><span id="stalled_attacks"></span>%</span></div>
+    </div>
+    
+    <div class="glass-panel">
+      <h2>How to play</h2>
+      <ul>
+        <li>Refresh page to restart.</li>
+        <li>Switch between inventory and prayer book with 1 and 2 keyboard keys.</li>
+        <li>You can synchronize Hunllef Helper by starting it and then immediately refreshing the page to start new game.</li>
+        <li>Idle player is yellow. Attacking player is blue. Player during the casting tick (immobilized) is lighter blue.</li>
+        <li>Black floor is safe. Red floor shows where unsafe floor will appear in 3 ticks. Yellow floor is unsafe.</li>
+        <li>Red circles are tornadoes. They are very unsafe.</li>
+        <li>B(ow)/S(taff) in the inventory swaps the weapon. In the prayer book it swaps the prayer. F(ish) in inventory heals.</li>
+        <li>Once you start reaching 500-600 damage and 80/80 performance, you should be more ready for the real CG fight.</li>
+      </ul>
+    </div>
   </div>
-</div>
-<div id="additional_stats" style="margin: 10px; display: none;">
-  <h2>Additional stats</h2>
-  <div>Ticks: <span id="ticks"></span> (<span id="time"></span>s)</div>
-  <div>Tornado hits: <span id="tornado_hits"></span></div>
-  <div>Floor hits: <span id="floor_hits"></span></div>
-  <div>Boss hits: <span id="boss_hits"></span></div>
-  <div>Avoidable dmg: <span id="avoidable_dmg"></span></div>
-  <div>Unavoidable dmg: <span id="unavoidable_dmg"></span></div>
-  <div>Correct attack time: <span id="correct_attacks"></span>%</div>
-  <div>Failed attack time: <span id="failed_attacks"></span>%</div>
-  <div>Eating time: <span id="eat_attacks"></span>%</div>
-  <div>Stalled time: <span id="stalled_attacks"></span>%</div>
-</div>
 
-<div>
-  <h2>Options</h2>
-  <div style="display: flex;"><input type="checkbox" id="opts_damageSounds"/> Damage sounds</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_attackSwapSounds"/> Hunllef attack style swap sounds</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_freezeScoresOnDeath"/> Freeze scores on death</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_showPathing"/> Show pathing</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_tornadoTrueTile"/> Show tornado true tiles</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_hunleffInCorner"/> Spawn Hunllef always in corner.</div>
-  <div style="display: flex;"><input type="checkbox" id="opts_showAdditionalStats"/> Show additional stats</div>
-
-  <h2>How to play</h2>
-  <ul>
-    <li>Refresh page to restart.</li>
-    <li>Switch between inventory and prayer book with 1 and 2 keyboard keys.</li>
-    <li>You can synchronize Hunllef Helper by starting it and then immediately refreshing the page to start new game.</li>
-    <li>Idle player is yellow. Attacking player is blue. Player during the casting tick (immobilized) is lighter blue.</li>
-    <li>Black floor is safe. Red floor shows where unsafe floor will appear in 3 ticks. Yellow floor is unsafe.</li>
-    <li>Red circles are tornadoes. They are very unsafe.</li>
-    <li>The setup uses two combat styles B(ow) and S(taff). Big letter on the player is their currently equipped weapon. Small letter on the top is prayer.</li>
-    <li>Hunllef is white and standing on it is unsafe (stomp doesn't delay the attacks). Prayer is in the middle, attack style on bottom, and total damage taken on top.</li>
-    <li>B(ow)/S(taff) in the inventory swaps the weapon. In the prayer book it swaps the prayer. F(ish) in inventory heals.</li>
-    <li>Game keeps track of your performance. Once your health reaches 0, your stats will freeze and turn red (can be disabled in options).</li>
-    <li>Once you start reaching 500-600 damage and 80/80 performance, you should be more than ready for the real CG fight.</li>
-  </ul>
-
-  <h2>Learning tips</h2>
-  <ul></ul>
-  <li>Ignore attacks and prayers first. Only focus on running around and not getting hit by floor and tornadoes.</li>
-  <li>Once that's mastered, start switching prayers. Aim for surviving whole game with near 100% survival efficiency (you can disable score freezing on death in options to help track this)</li>
-  <li>Finally throw in attacks and weapon switches and start maximizing damage</li>
-  </ul>
-  <br/>Good luck!
-</div>
+</main>
 
 <script>
   var config = {
@@ -144,42 +159,40 @@
   }
 
   const colors = {
-    bg: "#351f1c",
-    border: "#000000",
-    playerTileBorder: "#00ffff",
-    targetBorder: "#aaaaaa",
-    pathBorder: "#56520d",
+    bg: "rgba(20, 25, 35, 0.4)",      // Dark matching panel-bg
+    border: "rgba(60, 70, 90, 0.4)",    // matching panel-border
+    playerTileBorder: "#00e5ff",      // Neon cyan
+    targetBorder: "rgba(148, 163, 184, 0.7)", // Muted blue-grey
+    pathBorder: "rgba(226, 232, 240, 0.3)",   // Light path border
     
-    player: "#ffea00",
-    playerBorder: "#ffc600",
+    player: "#fbbf24",                // Vibrant Yellow
+    playerBorder: "#f59e0b",
     
-    playerAttack: "#00aeff",
-    playerAttackBorder: "#007eff",
+    playerAttack: "#00e5ff",          // Neon Cyan
+    playerAttackBorder: "#0891b2",
     
-    playerCast: "#00f6ff",
-    playerCastBorder: "#00c0ff",
+    playerCast: "#38bdf8",            // Light sky blue
+    playerCastBorder: "#0ea5e9",
 
-    playerPrayer: "#00cc00",
-    playerPrayerBorder: "#00aa00",
+    playerPrayer: "#22c55e",          // Vibrant Green
+    playerPrayerBorder: "#16a34a",
 
-    weapon: "#000",
+    weapon: "#1e293b",                // Dark slate
     
-    tornado: "#b4330b",
-    tornadoBorder: "#ff3c00",
+    tornado: "rgba(239, 68, 68, 0.8)", // Bright Red (transparent)
+    tornadoBorder: "#dc2626",
 
-    lava: "#b4330b",
-    
-    lava: "#604d11",
-    lavaBorder: "#80681e",
-    lavaNotification: "#4e0e0b",
-    lavaNotificationBorder: "#843733",
+    lava: "rgba(217, 119, 6, 0.5)",    // Amber transparent
+    lavaBorder: "#d97706",
+    lavaNotification: "rgba(220, 38, 38, 0.2)",
+    lavaNotificationBorder: "rgba(220, 38, 38, 0.6)",
 
-    boss: "rgba(256, 256, 256, 0.2)",
-    bossBorder: "rgba(256, 256, 256, 0.5)",
-    hunleffPrayer: "#fff",
+    boss: "rgba(226, 232, 240, 0.1)", // Light transparent
+    bossBorder: "rgba(226, 232, 240, 0.4)",
+    hunleffPrayer: "#f8fafc",
 
-    health: "#b4330b",
-    noHealth: "#000",
+    health: "#ef4444",                // Danger Red
+    noHealth: "rgba(15, 18, 25, 0.8)",// Empty health bg
   }
 
   class Coords {
@@ -517,6 +530,37 @@
       for (const p of game.goodProjectiles) {
         this.drawUnit(p.current(), colors.playerAttack, colors.playerAttackBorder, 12)
       }
+      // Click animations
+      const now = Date.now()
+      for (const anim of game.clickAnimations) {
+        const progress = (now - anim.startTime) / anim.duration
+        if (progress > 1) continue
+        
+        const size = this.tileSize * 0.3 * Math.sin(progress * Math.PI)
+        const alpha = 1 - progress
+        
+        this.ctx.beginPath()
+        this.ctx.moveTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize - size, anim.pos.y * this.tileSize + 0.5 * this.tileSize - size)
+        this.ctx.lineTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize + size, anim.pos.y * this.tileSize + 0.5 * this.tileSize + size)
+        this.ctx.moveTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize + size, anim.pos.y * this.tileSize + 0.5 * this.tileSize - size)
+        this.ctx.lineTo(anim.pos.x * this.tileSize + 0.5 * this.tileSize - size, anim.pos.y * this.tileSize + 0.5 * this.tileSize + size)
+        
+        this.ctx.strokeStyle = anim.color
+        this.ctx.globalAlpha = alpha
+        this.ctx.lineWidth = 2
+        this.ctx.stroke()
+        this.ctx.globalAlpha = 1
+      }
+    }
+  }
+
+  // Click Animation Data Structure
+  class ClickAnimation {
+    constructor(pos, color) {
+      this.pos = pos
+      this.color = color
+      this.startTime = Date.now()
+      this.duration = 400
     }
   }
 
@@ -535,10 +579,34 @@
     v.stop(a.currentTime+duration*0.001)
   }
   
+  // Custom Controls Logic
+  var isPaused = false;
+  var globalMute = false;
+
+  function togglePause(pauseState) {
+    isPaused = pauseState;
+    document.getElementById("btn-play").classList.toggle("active", !isPaused);
+    document.getElementById("btn-pause").classList.toggle("active", isPaused);
+  }
+
+  function toggleGlobalMute() {
+    globalMute = !globalMute;
+    const btn = document.getElementById("btn-mute");
+    btn.innerHTML = globalMute ? "Mute: On" : "Mute: Off";
+    btn.classList.toggle("active", globalMute);
+  }
+
+  function resetGame() {
+    // A full reload is the cleanest way given the complex state
+    location.reload();
+  }
+
   function beep() {
+    if (globalMute) return;
     beeper(0.05, 400, 100)
   }
   function boop() {
+    if (globalMute) return;
     beeper(0.1, 100, 200)
   }
 
@@ -595,6 +663,7 @@
       this.floor = new Floor([])
       this.goodProjectiles = []
       this.badProjectiles = []
+      this.clickAnimations = []
       this.prevFloor = -1
       this.tornadoOffset = rnd(config.tornadoTicks)
 
@@ -609,8 +678,13 @@
     }
 
     click(tile) {
-      if (this.boss.area.contains(tile)) this.player.attack();
-      else this.player.setTarget(tile);
+      if (this.boss.area.contains(tile)) {
+        this.player.attack();
+        this.clickAnimations.push(new ClickAnimation(tile, colors.health)) // Red for attacking
+      } else {
+        this.player.setTarget(tile);
+        this.clickAnimations.push(new ClickAnimation(tile, colors.player)) // Yellow for moving
+      }
     }
 
     eat() {
@@ -785,6 +859,7 @@
     }
 
     draw() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (var x = 0; x < 4; ++x) {
         for (var y = 0; y < 7; ++y) {
           this.drawTile(new Coords(x, y), colors.bg, colors.border)
@@ -845,6 +920,7 @@
     }
 
     draw() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       for (var x = 0; x < 4; ++x) {
         for (var y = 0; y < 7; ++y) {
           this.drawTile(new Coords(x, y), colors.bg, colors.border)
@@ -915,6 +991,7 @@
       this.draw()
     }
     draw() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
       const s = this.canvas.width
       const missingPct = ((config.maxHealth - this.value) / config.maxHealth)
 
@@ -944,7 +1021,11 @@
     board.draw()
   }
 
-  setInterval(function() { game.nextTick(); }, config.tickLengthMillis)
+  setInterval(function() { 
+    if (!isPaused) {
+      game.nextTick(); 
+    }
+  }, config.tickLengthMillis)
 
   document.addEventListener("keypress", function(e) {
     if (e.key == "1") {
