@@ -569,6 +569,19 @@
 
       // Boss Weapon (Bottom Center)
       const bossWeaponPos = game.boss.area.start.add(new Coords(2, 4));
+      
+      // Draw background circle
+      this.ctx.beginPath();
+      this.ctx.arc(
+        bossWeaponPos.x * this.tileSize + 0.5 * this.tileSize, 
+        bossWeaponPos.y * this.tileSize + 0.5 * this.tileSize, 
+        this.tileSize / 3, 
+        0, 2 * Math.PI
+      );
+      // Light blue for Staff (Magic), Green for Bow (Ranged)
+      this.ctx.fillStyle = game.boss.weapon === "S" ? "rgba(56, 189, 248, 0.5)" : "rgba(34, 197, 94, 0.5)"; 
+      this.ctx.fill();
+
       if (imagePaths[game.boss.weapon]) {
         const img = getImage(imagePaths[game.boss.weapon]);
         if (img.complete && img.naturalHeight !== 0) {
