@@ -31,8 +31,8 @@
   <div class="right-column">
     <!-- Control Bar -->
     <div class="control-bar glass-panel">
-      <button id="btn-play" class="control-btn active" onclick="togglePause(false)">Play</button>
-      <button id="btn-pause" class="control-btn" onclick="togglePause(true)">Pause</button>
+      <button id="btn-play" class="control-btn" onclick="togglePause(false)">Play</button>
+      <button id="btn-pause" class="control-btn active" onclick="togglePause(true)">Pause</button>
       <button id="btn-reset" class="control-btn danger" onclick="resetGame()">Reset</button>
       <button id="btn-mute" class="control-btn" onclick="toggleGlobalMute()">Mute: Off</button>
     </div>
@@ -49,9 +49,15 @@
       </div>
     </div>
 
-    <div class="glass-panel inventory-container">
-      <canvas id="inventory" width="200" height="350"></canvas>
-      <canvas id="prayer_book" width="200" height="350" style="display: none;"></canvas>
+    <div class="glass-panel inventory-container" style="padding-top: 0;">
+      <div class="tabs-header">
+        <button id="tab-inventory" class="tab-btn active" onclick="switchView('inventory')">Inventory</button>
+        <button id="tab-prayer" class="tab-btn" onclick="switchView('prayer')">Prayer Book</button>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="inventory" width="200" height="350"></canvas>
+        <canvas id="prayer_book" width="200" height="350" style="display: none;"></canvas>
+      </div>
     </div>
 
     <div id="additional_stats" class="glass-panel" style="display: none;">
@@ -157,6 +163,23 @@
     else if (text == "F") text = config.fishChar;
     return text;
   }
+
+  const loadedImages = {};
+  function getImage(url) {
+    if (loadedImages[url]) return loadedImages[url];
+    const img = new Image();
+    img.src = url;
+    loadedImages[url] = img;
+    return img;
+  }
+
+  const imagePaths = {
+    "F": "https://oldschool.runescape.wiki/images/Paddlefish.png?b2e22",
+    "B": "https://oldschool.runescape.wiki/images/Crystal_bow_%28perfected%29.png?5580c",
+    "S": "https://oldschool.runescape.wiki/images/Crystal_staff_%28perfected%29.png?3bcd5",
+    "PM": "https://oldschool.runescape.wiki/images/Protect_from_Magic.png?5c9d8",
+    "PR": "https://oldschool.runescape.wiki/images/Protect_from_Missiles.png?686a4"
+  };
 
   const colors = {
     bg: "rgba(20, 25, 35, 0.4)",      // Dark matching panel-bg
@@ -577,7 +600,7 @@
   }
   
   // Custom Controls Logic
-  var isPaused = false;
+  var isPaused = true;
   var globalMute = false;
 
   function togglePause(pauseState) {
@@ -596,6 +619,23 @@
   function resetGame() {
     // A full reload is the cleanest way given the complex state
     location.reload();
+  }
+
+  function switchView(view) {
+    const invTab = document.getElementById("tab-inventory");
+    const prayTab = document.getElementById("tab-prayer");
+    
+    if (view === 'inventory') {
+      invTab.classList.add("active");
+      prayTab.classList.remove("active");
+      inventory.show();
+      prayerBook.hide();
+    } else if (view === 'prayer') {
+      prayTab.classList.add("active");
+      invTab.classList.remove("active");
+      prayerBook.show();
+      inventory.hide();
+    }
   }
 
   function beep() {
@@ -860,9 +900,27 @@
       for (var x = 0; x < 4; ++x) {
         for (var y = 0; y < 7; ++y) {
           this.drawTile(new Coords(x, y), colors.bg, colors.border)
-          if (this.contents[x][y] != null) this.drawText(new Coords(x, y), this.contents[x][y], "#fff")
+          const content = this.contents[x][y];
+          if (content != null) {
+            if (imagePaths[content]) {
+              const img = getImage(imagePaths[content]);
+              if (img.complete && img.naturalHeight !== 0) {
+                 this.drawItemImage(new Coords(x, y), img);
+              } else {
+                 this.drawText(new Coords(x, y), content, "#fff"); // Fallback while loading
+              }
+            } else {
+              this.drawText(new Coords(x, y), content, "#fff");
+            }
+          }
         }
       }
+    }
+
+    drawItemImage(pos, img) {
+      const padding = 4;
+      const size = this.tileSize - padding * 2;
+      this.ctx.drawImage(img, pos.x * this.tileSize + padding, pos.y * this.tileSize + padding, size, size);
     }
 
     drawText(pos, text, color) {
@@ -921,16 +979,36 @@
       for (var x = 0; x < 4; ++x) {
         for (var y = 0; y < 7; ++y) {
           this.drawTile(new Coords(x, y), colors.bg, colors.border)
-          if (this.contents[x][y] != null) {
-            var textColor = "#fff"
-            if (this.contents[x][y] == this.game.player.prayer) {
+          const content = this.contents[x][y];
+          if (content != null) {
+            if (content == this.game.player.prayer) {
               this.drawUnit(new Coords(x, y), colors.player, colors.playerBorder)
-              textColor = "#000"
             }
-            this.drawText(new Coords(x, y), this.contents[x][y], textColor)
+            
+            // Map weapon keys to prayer keys for rendering images in the prayer book
+            const imgKey = content === "S" ? "PM" : (content === "B" ? "PR" : content);
+            
+            if (imagePaths[imgKey]) {
+              const img = getImage(imagePaths[imgKey]);
+              if (img.complete && img.naturalHeight !== 0) {
+                 this.drawItemImage(new Coords(x, y), img);
+              } else {
+                 const textColor = content == this.game.player.prayer ? "#000" : "#fff";
+                 this.drawText(new Coords(x, y), content, textColor); // Fallback while loading
+              }
+            } else {
+              const textColor = content == this.game.player.prayer ? "#000" : "#fff";
+              this.drawText(new Coords(x, y), content, textColor);
+            }
           }
         }
       }
+    }
+    
+    drawItemImage(pos, img) {
+      const padding = 4;
+      const size = this.tileSize - padding * 2;
+      this.ctx.drawImage(img, pos.x * this.tileSize + padding, pos.y * this.tileSize + padding, size, size);
     }
 
     drawText(pos, text, color) {
@@ -1026,12 +1104,10 @@
 
   document.addEventListener("keypress", function(e) {
     if (e.key == "1") {
-      inventory.show()
-      prayerBook.hide()
+      switchView('inventory');
     }
     if (e.key == "2") {
-      inventory.hide()
-      prayerBook.show()
+      switchView('prayer');
     }
   });
 </script>
