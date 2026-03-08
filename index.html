@@ -1249,13 +1249,15 @@
     }
   }
 
+  let board, inventory, prayerBook;
+
   const initGame = () => {
     const game = new Game()
     window.game = game // Expose globally for UI handlers
-    const board = new Board("board", game)
-    const inventory = new Inventory("inventory", game)
+    board = new Board("board", game)
+    inventory = new Inventory("inventory", game)
     inventory.draw()
-    const prayerBook = new PrayerBook("prayer_book", game)
+    prayerBook = new PrayerBook("prayer_book", game)
     prayerBook.draw()
 
     const draw = () => {
