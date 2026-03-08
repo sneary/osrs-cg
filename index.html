@@ -31,6 +31,7 @@
       <label class="option-item"><input type="checkbox" id="opts_freezeScoresOnDeath"/> Freeze scores on death</label>
       <label class="option-item"><input type="checkbox" id="opts_showPathing"/> Show pathing</label>
       <label class="option-item"><input type="checkbox" id="opts_tornadoTrueTile"/> Show tornado true tiles</label>
+      <label class="option-item"><input type="checkbox" id="opts_enableTornadoes"/> Enable tornadoes</label>
       <label class="option-item"><input type="checkbox" id="opts_hunleffInCorner"/> Spawn Hunllef always in corner.</label>
       <label class="option-item"><input type="checkbox" id="opts_showAdditionalStats"/> Show additional stats</label>
     </div>
@@ -108,6 +109,7 @@
     showAdditionalStats: false,
     hunleffInCorner: false,
     tornadoTrueTile: false,
+    enableTornadoes: true,
     tickLengthMillis: 600,
     tornadoTicks: 20,
     noTornadoTicks: 30,
@@ -143,7 +145,7 @@
 
   // Options handling
   for (const opt of ["opts_damageSounds", "opts_attackSwapSounds", "opts_showPathing", "opts_freezeScoresOnDeath",
-                     "opts_showAdditionalStats", "opts_hunleffInCorner", "opts_tornadoTrueTile"]) {
+                     "opts_showAdditionalStats", "opts_hunleffInCorner", "opts_tornadoTrueTile", "opts_enableTornadoes"]) {
     const configName = opt.substring(5)
     const fromStorage = JSON.parse(window.localStorage.getItem(opt))
     if (fromStorage === true || fromStorage === false) {
@@ -927,8 +929,12 @@
       this.badProjectiles = []
 
       const tornadoInterval = config.tornadoTicks + config.noTornadoTicks
-      if (this.tick % tornadoInterval == this.tornadoOffset) this.spawnTornadoes();
-      if (this.tick % tornadoInterval == (this.tornadoOffset + config.tornadoTicks) % tornadoInterval) this.tornadoes.length = 0;
+      if (config.enableTornadoes) {
+        if (this.tick % tornadoInterval == this.tornadoOffset) this.spawnTornadoes();
+        if (this.tick % tornadoInterval == (this.tornadoOffset + config.tornadoTicks) % tornadoInterval) this.tornadoes.length = 0;
+      } else {
+        this.tornadoes.length = 0; // Ensure they are cleared if toggled off
+      }
 
       const floorInterval = config.lavaTicks + config.lavaNotificationTicks
       if (this.tick % floorInterval == 0) this.spawnFloor()
