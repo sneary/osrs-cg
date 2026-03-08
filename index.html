@@ -143,7 +143,7 @@
 
   // Options handling
   for (const opt of ["opts_damageSounds", "opts_attackSwapSounds", "opts_showPathing", "opts_freezeScoresOnDeath",
-                     "opts_showAdditionalStats", "opts_hunleffInCorner", "opts_tornadoTrueTile"]) {
+                     "opts_showAdditionalStats", "opts_hunleffInCorner"]) {
     const configName = opt.substring(5)
     const fromStorage = JSON.parse(window.localStorage.getItem(opt))
     if (fromStorage === true || fromStorage === false) {
