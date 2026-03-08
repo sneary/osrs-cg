@@ -183,12 +183,12 @@
   }
 
   const imagePaths = {
-    "F": "https://oldschool.runescape.wiki/images/Paddlefish.png?b2e22",
-    "B": "https://oldschool.runescape.wiki/images/Crystal_bow_%28perfected%29.png?5580c",
-    "S": "https://oldschool.runescape.wiki/images/Crystal_staff_%28perfected%29.png?3bcd5",
-    "PM": "https://oldschool.runescape.wiki/images/Protect_from_Magic.png?5c9d8",
-    "PR": "https://oldschool.runescape.wiki/images/Protect_from_Missiles.png?686a4",
-    "BOSS": "https://oldschool.runescape.wiki/images/thumb/Corrupted_Hunllef.png/560px-Corrupted_Hunllef.png?0cd55"
+    "F": "assets/paddlefish.png",
+    "B": "assets/crystal_bow.png",
+    "S": "assets/crystal_staff.png",
+    "PM": "assets/protect_from_magic.png",
+    "PR": "assets/protect_from_missiles.png",
+    "BOSS": "assets/boss.png"
   };
 
   const colors = {
@@ -1249,23 +1249,40 @@
     }
   }
 
-  const game = new Game()
-  window.game = game // Expose globally for UI handlers
-  const board = new Board("board", game)
-  const inventory = new Inventory("inventory", game)
-  inventory.draw()
-  const prayerBook = new PrayerBook("prayer_book", game)
-  prayerBook.draw()
+  const initGame = () => {
+    const game = new Game()
+    window.game = game // Expose globally for UI handlers
+    const board = new Board("board", game)
+    const inventory = new Inventory("inventory", game)
+    inventory.draw()
+    const prayerBook = new PrayerBook("prayer_book", game)
+    prayerBook.draw()
 
-  const draw = () => {
-    board.draw()
-  }
-
-  setInterval(function() { 
-    if (!isPaused) {
-      game.nextTick(); 
+    const draw = () => {
+      board.draw()
     }
-  }, config.tickLengthMillis)
+
+    setInterval(function() { 
+      if (!isPaused) {
+        game.nextTick(); 
+      }
+    }, config.tickLengthMillis)
+    
+    // Initial draw
+    requestAnimationFrame(draw)
+  };
+
+  // Preload all assets before starting to prevent FOUC (Flash of Unstyled Content/emojis)
+  Promise.all(Object.values(imagePaths).map(url => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => { loadedImages[url] = img; resolve(); };
+      img.onerror = () => { console.error("Failed to load asset:", url); resolve(); }; // Proceed anyway if one fails
+      img.src = url;
+    });
+  })).then(() => {
+    initGame();
+  });
 
   document.addEventListener("keypress", function(e) {
     if (e.key == "1") {
