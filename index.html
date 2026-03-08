@@ -724,6 +724,8 @@
   
   // Custom Controls Logic
   var pauseStartTime = null;
+  var isPaused = true;
+  var globalMute = false;
 
   function togglePause(pauseState) {
     if (isPaused === pauseState) return;
@@ -741,7 +743,6 @@
       // Shift all active animations forward by the pause duration so they don't skip
       if (window.game) {
         if (window.game.player && window.game.player.shadow) window.game.player.shadow.movementStart += pauseDuration;
-        if (window.game.boss && window.game.boss.shadow) window.game.boss.shadow.movementStart += pauseDuration;
         
         for (const torn of window.game.tornadoes) {
           if (torn.shadow) torn.shadow.movementStart += pauseDuration;
