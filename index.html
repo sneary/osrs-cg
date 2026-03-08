@@ -265,6 +265,18 @@
   }
 
   // A fluid shadow following the true position of a unit
+  class Projectile {
+    constructor(start, target, duration) {
+      this.position = start.clone()
+      this.target = target.clone()
+      this.duration = duration
+      this.movementStart = Date.now()
+    }
+    current() {
+      const progress = (Date.now() - this.movementStart) / this.duration
+      return this.position.add(this.target.sub(this.position).multiply(progress))
+    }
+  }
   class Shadow {
     constructor(position) {
       this.position = position.clone()
@@ -272,7 +284,8 @@
       this.movementStart = Date.now()
     }
     current() {
-      const progress = (Date.now() - this.movementStart) / config.tickLengthMillis
+      // Clamp progress to 1 so entities don't drift offscreen when paused or moving too fast
+      const progress = Math.min(1, Math.max(0, (Date.now() - this.movementStart) / config.tickLengthMillis))
       return this.position.add(this.target.sub(this.position).multiply(progress))
     }
     move(position) {
@@ -703,13 +716,40 @@
   }
   
   // Custom Controls Logic
-  var isPaused = true;
-  var globalMute = false;
+  var pauseStartTime = null;
 
   function togglePause(pauseState) {
+    if (isPaused === pauseState) return;
+    
     isPaused = pauseState;
     document.getElementById("btn-play").classList.toggle("active", !isPaused);
     document.getElementById("btn-pause").classList.toggle("active", isPaused);
+    
+    if (isPaused) {
+      pauseStartTime = Date.now();
+    } else if (pauseStartTime !== null) {
+      const pauseDuration = Date.now() - pauseStartTime;
+      pauseStartTime = null;
+      
+      // Shift all active animations forward by the pause duration so they don't skip
+      if (typeof game !== 'undefined') {
+        if (game.player && game.player.shadow) game.player.shadow.movementStart += pauseDuration;
+        if (game.boss && game.boss.shadow) game.boss.shadow.movementStart += pauseDuration;
+        
+        for (const torn of game.tornadoes) {
+          if (torn.shadow) torn.shadow.movementStart += pauseDuration;
+        }
+        for (const proj of game.badProjectiles) {
+          proj.movementStart += pauseDuration;
+        }
+        for (const proj of game.goodProjectiles) {
+          proj.movementStart += pauseDuration;
+        }
+        for (const anim of game.clickAnimations) {
+          anim.startTime += pauseDuration;
+        }
+      }
+    }
   }
 
   function toggleGlobalMute() {
