@@ -12,6 +12,14 @@
 <main class="app-container">
   
   <div class="left-column">
+    <div class="boss-health-bar-container">
+      <div class="boss-name">Corrupted Hunllef</div>
+      <div class="boss-health-bg">
+        <div class="boss-health-fill" id="boss_health_fill" style="width: 100%;"></div>
+        <div class="boss-health-text" id="boss_health_text">1000 / 1000 (100.0%)</div>
+      </div>
+    </div>
+    
     <div class="glass-panel board-container">
       <canvas id="board" width="500" height="500"></canvas>
     </div>
@@ -115,6 +123,7 @@
     eatTimeAttackCD: 3,
     hunleffPrayerSwapHits: 6,
     maxHealth: 99,
+    bossMaxHealth: 1000,
     foodHealing: 18,
     playerDamage: 12,
     hunleffAttackCD: 5,
@@ -566,10 +575,8 @@
         }
       }
       
-      this.drawText(game.boss.area.start.add(new Coords(2, 0)), game.boss.damageTaken, colors.hunleffPrayer)
-      
-      // Boss Prayer (Top Center, shifted up to y+1)
-      const bossPrayerPos = game.boss.area.start.add(new Coords(2, 1));
+      // Boss Prayer (Top Center, shifted up to y+0)
+      const bossPrayerPos = game.boss.area.start.add(new Coords(2, 0));
       let bossPrayerKey = game.boss.prayer == "S" ? "PM" : "PR";
       if (imagePaths[bossPrayerKey]) {
         const img = getImage(imagePaths[bossPrayerKey]);
@@ -955,6 +962,19 @@
       if (prevDmg < totaldmg() && config.damageSounds) beep()
 
       if (this.tick == 0) return;
+      
+      // Boss Health Update
+      const bossMaxHealth = config.bossMaxHealth || 1000;
+      const currentHealth = Math.max(0, bossMaxHealth - this.boss.damageTaken);
+      const healthPercent = (currentHealth / bossMaxHealth) * 100;
+      
+      const fillEl = document.getElementById("boss_health_fill");
+      const textEl = document.getElementById("boss_health_text");
+      if (fillEl && textEl) {
+        fillEl.style.width = `${healthPercent}%`;
+        textEl.innerText = `${Math.floor(currentHealth)} / ${bossMaxHealth} (${healthPercent.toFixed(1)}%)`;
+      }
+
       // Info
       document.getElementById("ticks").innerHTML = this.tick
       document.getElementById("time").innerHTML = (this.tick * 0.6).toFixed(1)
@@ -1125,7 +1145,7 @@
           const content = this.contents[x][y];
           if (content != null) {
             if (content == this.game.player.prayer) {
-              this.drawUnit(new Coords(x, y), colors.player, colors.playerBorder)
+              this.drawUnit(new Coords(x, y), colors.playerPrayer, colors.playerPrayerBorder)
             }
             
             // Map weapon keys to prayer keys for rendering images in the prayer book

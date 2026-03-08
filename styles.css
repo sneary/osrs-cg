@@ -85,6 +85,55 @@ li {
   width: 320px;
 }
 
+/* OSRS Boss Health Bar */
+.boss-health-bar-container {
+  width: 100%;
+  max-width: 500px;
+  background: #2d2d2d;
+  border: 2px solid #3e3e3e;
+  padding: 4px;
+  box-sizing: border-box;
+  margin: 0 auto;
+}
+
+.boss-name {
+  color: #ff981f; /* OSRS orange */
+  text-align: center;
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.boss-health-bg {
+  width: 100%;
+  height: 20px;
+  background-color: #cc0000;
+  position: relative;
+  border: 1px solid #000;
+}
+
+.boss-health-fill {
+  height: 100%;
+  background-color: #00cc00;
+  transition: width 0.1s linear;
+}
+
+.boss-health-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+  pointer-events: none;
+}
+
 .board-container {
   display: flex;
   justify-content: center;
