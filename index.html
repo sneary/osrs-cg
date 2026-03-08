@@ -178,7 +178,8 @@
     "B": "https://oldschool.runescape.wiki/images/Crystal_bow_%28perfected%29.png?5580c",
     "S": "https://oldschool.runescape.wiki/images/Crystal_staff_%28perfected%29.png?3bcd5",
     "PM": "https://oldschool.runescape.wiki/images/Protect_from_Magic.png?5c9d8",
-    "PR": "https://oldschool.runescape.wiki/images/Protect_from_Missiles.png?686a4"
+    "PR": "https://oldschool.runescape.wiki/images/Protect_from_Missiles.png?686a4",
+    "BOSS": "https://oldschool.runescape.wiki/images/thumb/Corrupted_Hunllef.png/560px-Corrupted_Hunllef.png?0cd55"
   };
 
   const colors = {
@@ -493,6 +494,12 @@
       this.ctx.fillText(prayer, pos.x * tileSize + offsetX, pos.y * tileSize + offsetY + fontSize * 0.4)
     }
 
+    drawItemImage(pos, img, paddingScale = 0.1, offsetX = 0, offsetY = 0) {
+      const padding = this.tileSize * paddingScale;
+      const size = this.tileSize - padding * 2;
+      this.ctx.drawImage(img, (pos.x * this.tileSize) + padding + offsetX, (pos.y * this.tileSize) + padding + offsetY, size, size);
+    }
+
     draw() {
       const game = this.game
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -511,9 +518,66 @@
       } 
       // Boss
       this.drawArea(game.boss.area, colors.boss, colors.bossBorder)
-      this.drawText(game.boss.area.start.add(new Coords(2, 2)), prayerDisplay(game.boss.prayer), colors.hunleffPrayer)
+      
+      // Boss Sprite Background
+      if (imagePaths["BOSS"]) {
+        const img = getImage(imagePaths["BOSS"]);
+        if (img.complete && img.naturalHeight !== 0) {
+          const area = game.boss.area;
+          this.ctx.globalAlpha = 0.4; // Make the boss sprite somewhat transparent
+          
+          const boxSize = area.width * this.tileSize; // Boss area is square
+          const imgAspect = img.naturalWidth / img.naturalHeight;
+          
+          let drawWidth = boxSize;
+          let drawHeight = boxSize;
+          
+          if (imgAspect > 1) {
+             drawHeight = boxSize / imgAspect;
+          } else {
+             drawWidth = boxSize * imgAspect;
+          }
+          
+          const xOffset = (boxSize - drawWidth) / 2;
+          const yOffset = (boxSize - drawHeight) / 2;
+
+          this.ctx.drawImage(
+            img, 
+            area.start.x * this.tileSize + xOffset, 
+            area.start.y * this.tileSize + yOffset, 
+            drawWidth, 
+            drawHeight
+          );
+          
+          this.ctx.globalAlpha = 1.0; // Reset alpha
+        }
+      }
+      
       this.drawText(game.boss.area.start.add(new Coords(2, 0)), game.boss.damageTaken, colors.hunleffPrayer)
-      this.drawText(game.boss.area.start.add(new Coords(2, 4)), attackDisplay(game.boss.weapon), colors.tornadoBorder)
+      
+      // Boss Prayer (Top Center, shifted up to y+1)
+      const bossPrayerPos = game.boss.area.start.add(new Coords(2, 1));
+      let bossPrayerKey = game.boss.prayer == "S" ? "PM" : "PR";
+      if (imagePaths[bossPrayerKey]) {
+        const img = getImage(imagePaths[bossPrayerKey]);
+        if (img.complete && img.naturalHeight !== 0) {
+          this.drawItemImage(bossPrayerPos, img, 0.2);
+        } else {
+          this.drawText(bossPrayerPos, prayerDisplay(game.boss.prayer), colors.hunleffPrayer);
+        }
+      }
+
+      // Boss Weapon (Bottom Center)
+      const bossWeaponPos = game.boss.area.start.add(new Coords(2, 4));
+      if (imagePaths[game.boss.weapon]) {
+        const img = getImage(imagePaths[game.boss.weapon]);
+        if (img.complete && img.naturalHeight !== 0) {
+          this.drawItemImage(bossWeaponPos, img, 0.2);
+        } else {
+          this.drawText(bossWeaponPos, attackDisplay(game.boss.weapon), colors.tornadoBorder);
+        }
+      }
+
       // Pathing
       if (config.showPathing) {
         for (const tile of game.player.path) {
@@ -536,11 +600,37 @@
       } else {
         this.drawUnit(game.player.displayPosition, colors.player, colors.playerBorder)
       }
+      
+      // Player Weapon (Centered in player square)
       if (game.player.weapon != null) {
-        this.drawText(game.player.displayPosition, attackDisplay(game.player.weapon), colors.weapon)
+        if (imagePaths[game.player.weapon]) {
+          const img = getImage(imagePaths[game.player.weapon]);
+          if (img.complete && img.naturalHeight !== 0) {
+            this.drawItemImage(game.player.displayPosition, img, 0.2);
+          } else {
+            this.drawText(game.player.displayPosition, attackDisplay(game.player.weapon), colors.weapon)
+          }
+        }
       }
+
+      // Player Prayer (Offset slightly upwards)
       if (game.player.prayer != null) {
-        this.drawPrayer(game.player.displayPosition, prayerDisplay(game.player.prayer), colors.playerPrayer, colors.playerPrayerBorder)
+        const prayerKey = game.player.prayer == "S" ? "PM" : "PR";
+        if (imagePaths[prayerKey]) {
+           const img = getImage(imagePaths[prayerKey]);
+           if (img.complete && img.naturalHeight !== 0) {
+             const offset = -0.5 * this.tileSize;
+             // Draw a small circle background to make the prayer pop like the original drawPrayer
+             this.ctx.beginPath();
+             this.ctx.arc(game.player.displayPosition.x * this.tileSize + 0.5 * this.tileSize, game.player.displayPosition.y * this.tileSize + 0.5 * this.tileSize + offset, this.tileSize / 4, 0, 2 * Math.PI)
+             this.ctx.fillStyle = colors.playerPrayer
+             this.ctx.fill();
+             
+             this.drawItemImage(game.player.displayPosition, img, 0.25, 0, offset);
+           } else {
+             this.drawPrayer(game.player.displayPosition, prayerDisplay(game.player.prayer), colors.playerPrayer, colors.playerPrayerBorder)
+           }
+        }
       }
       // Tornadoes
       for (const tornado of game.tornadoes) {
