@@ -739,20 +739,20 @@
       pauseStartTime = null;
       
       // Shift all active animations forward by the pause duration so they don't skip
-      if (typeof game !== 'undefined') {
-        if (game.player && game.player.shadow) game.player.shadow.movementStart += pauseDuration;
-        if (game.boss && game.boss.shadow) game.boss.shadow.movementStart += pauseDuration;
+      if (window.game) {
+        if (window.game.player && window.game.player.shadow) window.game.player.shadow.movementStart += pauseDuration;
+        if (window.game.boss && window.game.boss.shadow) window.game.boss.shadow.movementStart += pauseDuration;
         
-        for (const torn of game.tornadoes) {
+        for (const torn of window.game.tornadoes) {
           if (torn.shadow) torn.shadow.movementStart += pauseDuration;
         }
-        for (const proj of game.badProjectiles) {
+        for (const proj of window.game.badProjectiles) {
           proj.movementStart += pauseDuration;
         }
-        for (const proj of game.goodProjectiles) {
+        for (const proj of window.game.goodProjectiles) {
           proj.movementStart += pauseDuration;
         }
-        for (const anim of game.clickAnimations) {
+        for (const anim of window.game.clickAnimations) {
           anim.startTime += pauseDuration;
         }
       }
@@ -1249,6 +1249,7 @@
   }
 
   const game = new Game()
+  window.game = game // Expose globally for UI handlers
   const board = new Board("board", game)
   const inventory = new Inventory("inventory", game)
   inventory.draw()
